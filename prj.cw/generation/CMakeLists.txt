@@ -67,8 +67,8 @@ else()
     set(VTK_RUNTIME_PATH "${VTK_DIR}/../../lib")
 endif()
 
-add_dependencies(visualization documentation)
-#add_dependencies(prj.test documentation)
+##add_dependencies(visualization documentation)
+##add_dependencies(prj.test documentation)
 
 install(TARGETS data DESTINATION bin)
 install(DIRECTORY data/include/ DESTINATION include/data)
