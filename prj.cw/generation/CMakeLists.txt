@@ -1,13 +1,13 @@
-set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+##set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
+##set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-add_custom_target(
-    documentation
-    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Generating API documentation with Doxygen"
-    VERBATIM
-)
+##add_custom_target(
+ #   documentation
+ #   COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+ #   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+ #   COMMENT "Generating API documentation with Doxygen"
+ #   VERBATIM
+#)
 
 cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
 
