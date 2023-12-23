@@ -1,15 +1,25 @@
-##set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-##set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
-##add_custom_target(
- #   documentation
- #   COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
- #   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
- #   COMMENT "Generating API documentation with Doxygen"
- #   VERBATIM
-#)
-
 cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
+
+option(BUILD_DOC "Build documentation" ON)
+
+find_package(Doxygen)
+
+if (DOXYGEN_FOUND)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile ${DOXYGEN_OUT} @ONLY)
+    
+    message("Doxygen build started")
+
+    add_custom_target(doc_doxygen ALL
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM
+    )
+else (DOXYGEN_FOUND)
+    message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)
 
 project(generation)
 
@@ -25,13 +35,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin.dbg)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin.rel)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${CMAKE_CURRENT_SOURCE_DIR}/bin.relwithdbg)
 
-# Set the vcpkg triplet
 set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "Vcpkg target triplet")
 
-#set(VTK_DIR "${VCPKG_ROOT}/installed/x64-windows/share/vtk")
-#find_package(VTK COMPONENTS core highgui imgcodecs imgproc videoio  REQUIRED )
-#include_directories(${VTK_INCLUDE_DIRS})
-SET(VTK_DIR "C:/dev/vcpkg/vcpkg/installed/x64-windows/include/vtk-9.2" CACHE PATH "VTK directory override" FORCE)
 find_package(VTK COMPONENTS 
   CommonColor
   CommonCore
@@ -49,7 +54,6 @@ find_package(VTK COMPONENTS
 find_package(Threads)
  
 if (NOT VTK_FOUND)
-
   message(FATAL_ERROR " spherebyvtk: Unable to find the VTK build folder.")
 endif()
 
@@ -67,9 +71,6 @@ else()
     set(VTK_RUNTIME_PATH "${VTK_DIR}/../../lib")
 endif()
 
-##add_dependencies(visualization documentation)
-##add_dependencies(prj.test documentation)
-
 install(TARGETS data DESTINATION bin)
 install(DIRECTORY data/include/ DESTINATION include/data)
 install(FILES data/data.cpp DESTINATION include/data)
@@ -82,42 +83,132 @@ install(TARGETS visualization DESTINATION bin)
 install(DIRECTORY visualization/include/ DESTINATION include/visualization)
 install(FILES visualization/visualization.cpp visualization/include/visualization/visualization.hpp DESTINATION include/visualization)
 
-# Install OpenCV runtime files
-install(FILES
-        "${VTK_RUNTIME_PATH}/double-conversion.dll"
-        "${VTK_RUNTIME_PATH}/fmtd.dll"
-        "${VTK_RUNTIME_PATH}/jpeg62.dll"
-        "${VTK_RUNTIME_PATH}/liblzma.dll"
-        "${VTK_RUNTIME_PATH}/libpng16d.dll"
-        "${VTK_RUNTIME_PATH}/lz4d.dll"
-        "${VTK_RUNTIME_PATH}/pugixml.dll"
-        "${VTK_RUNTIME_PATH}/tiffd.dll"
-        "${VTK_RUNTIME_PATH}/vtkCommonColor-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkCommonComputationalGeometry-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkCommonCore-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkCommonDataModel-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkCommonExecutionModel-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkCommonMisc-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkCommonSystem-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkCommonTransforms-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkDICOMParser-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkFiltersCore-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkFiltersGeneral-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkFiltersGeometry-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkFiltersHybrid-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkFiltersSources-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkImagingCore-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkImagingSources-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkIOCore-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkIOGeometry-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkIOImage-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkkissfft-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkloguru-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkmetaio-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtkRenderingCore-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/vtksys-9.2d.dll"
-        "${VTK_RUNTIME_PATH}/zlibd1.dll"
-        DESTINATION bin)
+if(VISUALIZATION_INSTALL_TARGET)
+    install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*double-conversion.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*fmtd.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*jpeg62.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*liblzma.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*libpng16d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*lz4d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*pugixml.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*tiffd.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkCommonColor-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkCommonComputationalGeometry-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkCommonCore-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkCommonDataModel-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkCommonExecutionModel-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkCommonMisc-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkCommonSystem-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkCommonTransforms-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkDICOMParser-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkFiltersCore-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkFiltersGeneral-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkFiltersGeometry-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkFiltersHybrid-9.2d.dll*"
+    )
+        install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkFiltersSources-9.2d.dll*"
+    )
+            install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkImagingCore-9.2d.dll*"
+    )
+            install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkImagingSources-9.2d.dll*"
+    )
+            install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkIOCore-9.2d.dll*"
+    )
+            install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkkissfft-9.2d.dll*"
+    )
+            install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkloguru-9.2d.dll*"
+    )
+            install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkmetaio-9.2d.dll*"
+    )
+            install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtkRenderingCore-9.2d.dll*"
+    )
+                install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*vtksys-9.2d.dll*"
+    )
+                install(DIRECTORY "${VTK_RUNTIME_PATH}/"
+      DESTINATION bin
+      FILES_MATCHING PATTERN "*zlibd1.dll*"
+    )
+endif()
 
 # Install CMakeLists.txt files
 install(FILES CMakeLists.txt DESTINATION .)
@@ -125,6 +216,23 @@ install(FILES data/CMakeLists.txt DESTINATION data)
 install(FILES prj.test/CMakeLists.txt DESTINATION prj.test)
 install(FILES visualization/CMakeLists.txt DESTINATION visualization)
 
+vtk_module_autoinit(
+  TARGETS  visualization
+  MODULES ${VTK_LIBRARIES}
+)
+
+set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
+set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+add_custom_target(
+    documentation
+    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM
+)
+
+#add_dependencies(visualization documentation)
 vtk_module_autoinit(
   TARGETS  visualization
   MODULES ${VTK_LIBRARIES}
