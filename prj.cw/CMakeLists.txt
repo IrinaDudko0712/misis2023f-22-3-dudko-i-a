@@ -1,23 +1,4 @@
 cmake_minimum_required(VERSION 3.23 FATAL_ERROR)
-option(BUILD_DOC "Build documentation" ON)
-
-find_package(Doxygen)
-if (DOXYGEN_FOUND)
-    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile ${DOXYGEN_OUT} @ONLY)
-
-    message("Doxygen build started")
-
-    add_custom_target(doxygen_documentation ALL
-        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM
-    )
-else (DOXYGEN_FOUND)
-    message("Doxygen needs to be installed to generate the Doxygen documentation")
-endif (DOXYGEN_FOUND)
 project(prj.cw)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -315,16 +296,22 @@ vtk_module_autoinit(
   TARGETS  visualization
   MODULES ${VTK_LIBRARIES}
 )
+option(BUILD_DOC "Build documentation" ON)
 
-set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
-set(DOXYFILE_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+find_package(Doxygen)
 
-add_custom_target(
-    doxygen_documentation
-    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMENT "Generating API documentation with Doxygen"
-    VERBATIM
-)
+if (DOXYGEN_FOUND)
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/./doc/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
-add_dependencies(visualization doxygen_documentation)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    message("Doxygen build started")
+
+    add_custom_target( doc_doxygen ALL
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
+else (DOXYGEN_FOUND)
+    message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)
