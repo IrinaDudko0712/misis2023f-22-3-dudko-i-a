@@ -1,6 +1,5 @@
 #include <data/data.hpp>
 #include <visualization/visualization.hpp>
-#include <heatmap/heatmap.hpp>
 #include <iostream>
 #include <string>
 #include <vtkSphereSource.h>
@@ -152,10 +151,5 @@ int main(int argc, char* argv[]) {
     }
 
     renderWindowInteractor->Start();
-
-    HeatMap texture;
-
-    texture.Heatmap(filename);
-
     return 0;
 }
