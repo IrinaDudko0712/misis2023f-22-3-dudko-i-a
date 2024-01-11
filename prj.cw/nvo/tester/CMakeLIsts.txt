@@ -1,9 +1,0 @@
-add_executable(tester tester.cpp)
-
-target_link_libraries(tester PRIVATE nvolib)
-target_link_libraries(tester PRIVATE visualization)
-
-target_include_directories(tester PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../nvolib/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../visualization/include
-)
