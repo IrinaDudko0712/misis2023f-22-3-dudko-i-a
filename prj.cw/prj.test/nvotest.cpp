@@ -32,16 +32,16 @@ int main(int argc, char* argv[]) {
     Visualization visualization;
     SphericalCoordinatesGenerator generator;
 
-    // Создаем сферу
+
     vtkSmartPointer<vtkActor> sphereActor = visualization.createRealSphere(radius, color, opacity);
 
-    // Сохраняем в STL
+ 
     vtkSmartPointer<vtkSTLWriter> stlWriter = vtkSmartPointer<vtkSTLWriter>::New();
     stlWriter->SetFileName("sphere.stl");
     stlWriter->SetInputData(sphereActor->GetMapper()->GetInput());
     stlWriter->Write();
 
-    // Проверяем, является ли STL файл бинарным
+     
     STLCheck stlCheck;
     std::string stlFilename = "sphere.stl";
     if (stlCheck.isBinary_STL(stlFilename)) {
@@ -51,65 +51,66 @@ int main(int argc, char* argv[]) {
         std::cout << "The STL file is ASCII." << std::endl;
     }
 
-    // Вычисляем нормали и сохраняем их в файл
+ 
     NVO nvoSphere;
     nvoSphere.read_triangle_mesh("sphere.stl");
     nvoSphere.per_vertex_normals();
     nvoSphere.compute_normal_distribution_on_sphere(100);
 
-    // Создаем текстуру на основе файла с нормалями и сохраняем ее
+ 
     TextureDrawer textureDrawer;
     textureDrawer.drawNormalsAndSaveDrawing("spherical_normals.txt", "output_texture.png");
 
-    // Визуализируем сферу с нормалями
+   
     std::vector<Point> normals = generator.readPointsFromFile("spherical_normals.txt");
     if (!normals.empty()) {
-        // Создаем рендерер для текстуры
+ 
         vtkSmartPointer<vtkRenderer> textureRenderer = vtkSmartPointer<vtkRenderer>::New();
         vtkSmartPointer<vtkActor> texturedSphereActor = visualization.Mapping("output_texture.png", radius, color, opacity);
         textureRenderer->AddActor(texturedSphereActor);
 
-        // Создаем окно для визуализации текстуры
+         
         vtkSmartPointer<vtkRenderWindow> textureRenderWindow = vtkSmartPointer<vtkRenderWindow>::New();
         textureRenderWindow->SetWindowName("Texture Visualization");
         textureRenderWindow->SetSize(800, 800);
         textureRenderWindow->AddRenderer(textureRenderer);
 
-        // Добавляем интерактор и стиль взаимодействия
+ 
         vtkSmartPointer<vtkRenderWindowInteractor> textureInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
         vtkSmartPointer<vtkInteractorStyleTrackballCamera> textureStyle = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
         textureInteractor->SetInteractorStyle(textureStyle);
         textureInteractor->SetRenderWindow(textureRenderWindow);
 
-        // Создаем рендерер для нормалей
+ 
         vtkSmartPointer<vtkRenderer> normalRenderer = vtkSmartPointer<vtkRenderer>::New();
         vtkSmartPointer<vtkActor> normalSphereActor = visualization.generateSphereWithPoints(normals, opacity, color, radius);
         normalRenderer->AddActor(normalSphereActor);
 
-        // Создаем окно для визуализации нормалей
+ 
         vtkSmartPointer<vtkRenderWindow> normalRenderWindow = vtkSmartPointer<vtkRenderWindow>::New();
         normalRenderWindow->SetWindowName("Normals Visualization");
         normalRenderWindow->SetSize(800, 800);
         normalRenderWindow->AddRenderer(normalRenderer);
 
-        // Добавляем интерактор и стиль взаимодействия
+         
         vtkSmartPointer<vtkRenderWindowInteractor> normalInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
         vtkSmartPointer<vtkInteractorStyleTrackballCamera> normalStyle = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
         normalInteractor->SetInteractorStyle(normalStyle);
         normalInteractor->SetRenderWindow(normalRenderWindow);
 
-        // Сохраняем изображения в формате PNG с разными углами поворота
+  
         for (int i = 0; i < 6; ++i) {
-            // Настраиваем камеру внутри цикла для текстуры
+   
             vtkSmartPointer<vtkCamera> textureCamera = vtkSmartPointer<vtkCamera>::New();
             textureCamera->SetPosition(0, 0, 5);
             textureCamera->SetFocalPoint(0, 0, 0);
             textureCamera->Azimuth(20 * i);
             textureCamera->Elevation(10 * i);
             textureRenderer->SetActiveCamera(textureCamera);
+            textureRenderer->SetBackground(1.0, 1.0, 1.0);
             textureRenderWindow->Render();
 
-            // Сохраняем отрендеренное изображение с текстурированной сферой
+ 
             vtkSmartPointer<vtkWindowToImageFilter> textureWindowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
             textureWindowToImageFilter->SetInput(textureRenderWindow);
             textureWindowToImageFilter->Update();
@@ -118,16 +119,17 @@ int main(int argc, char* argv[]) {
             textureWriter->SetInputConnection(textureWindowToImageFilter->GetOutputPort());
             textureWriter->Write();
 
-            // Настраиваем камеру внутри цикла для нормалей
+ 
             vtkSmartPointer<vtkCamera> normalCamera = vtkSmartPointer<vtkCamera>::New();
             normalCamera->SetPosition(0, 0, 5);
             normalCamera->SetFocalPoint(0, 0, 0);
             normalCamera->Azimuth(20 * i);
             normalCamera->Elevation(10 * i);
             normalRenderer->SetActiveCamera(normalCamera);
+            normalRenderer->SetBackground(1.0, 1.0, 1.0);
             normalRenderWindow->Render();
 
-            // Сохраняем отрендеренное изображение с сферой с нормалями
+  
             vtkSmartPointer<vtkWindowToImageFilter> normalWindowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
             normalWindowToImageFilter->SetInput(normalRenderWindow);
             normalWindowToImageFilter->Update();
@@ -137,7 +139,7 @@ int main(int argc, char* argv[]) {
             normalWriter->Write();
         }
 
-        // Запускаем интеракторы
+ 
         textureInteractor->Start();
         normalInteractor->Start();
     }
